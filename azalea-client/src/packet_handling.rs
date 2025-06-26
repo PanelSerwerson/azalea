@@ -1321,11 +1321,18 @@ impl PacketReceiver {
                     self.run_schedule_sender.send(()).unwrap();
                 }
                 Err(error) => {
-                    if !matches!(*error, ReadPacketError::ConnectionClosed) {
-                        error!("Error reading packet from Client: {error:?}");
+                if let ReadPacketError::Parse { packet_id, .. } = &*error {
+                    if *packet_id == 38 {
+                        warn!("Ignoring bad ClientboundLevelParticlesPacket");
+                        continue;
                     }
-                    break;
                 }
+            
+                if !matches!(*error, ReadPacketError::ConnectionClosed) {
+                    error!("Error reading packet from Client: {error:?}");
+                }
+                break;
+            }
             }
         }
     }
