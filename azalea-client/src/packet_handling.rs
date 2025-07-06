@@ -1015,9 +1015,7 @@ pub fn process_packet_events(ecs: &mut World) {
             ClientboundGamePacket::ServerData(p) => {
                 debug!("Got server data packet {:?}", p);
             }
-            ClientboundGamePacket::SetEquipment(p) => {
-                debug!("Got set equipment packet {:?}", p);
-            }
+            ClientboundGamePacket::SetEquipment(_) => {}
             ClientboundGamePacket::UpdateMobEffect(p) => {
                 debug!("Got update mob effect packet {:?}", p);
             }
