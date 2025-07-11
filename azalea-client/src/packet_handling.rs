@@ -96,7 +96,7 @@ impl Plugin for PacketHandlerPlugin {
                     // we want to index and deindex right after
                     .before(EntityUpdateSet::Deindex),
             )
-            .add_systems(Update, death_event_on_0_health.before(death_listener))
+            /*.add_systems(Update, death_event_on_0_health.before(death_listener))*/
             .init_resource::<Events<PacketEvent>>()
             .add_event::<AddPlayerEvent>()
             .add_event::<RemovePlayerEvent>()
@@ -486,8 +486,7 @@ pub fn process_packet_events(ecs: &mut World) {
                     .get(),
                 );
             }
-            ClientboundGamePacket::PlayerInfoUpdate(_) => {
-                /*
+            ClientboundGamePacket::PlayerInfoUpdate(p) => {
                 debug!("Got player info packet {:?}", p);
 
                 #[allow(clippy::type_complexity)]
@@ -545,10 +544,8 @@ pub fn process_packet_events(ecs: &mut World) {
                 }
 
                 *tab_list_resource = tab_list.clone();
-                */
             }
-            ClientboundGamePacket::PlayerInfoRemove(_) => {
-                /*
+            ClientboundGamePacket::PlayerInfoRemove(p) => {
                 let mut system_state: SystemState<(
                     Query<&mut TabList>,
                     EventWriter<RemovePlayerEvent>,
@@ -567,7 +564,6 @@ pub fn process_packet_events(ecs: &mut World) {
                     }
                     tab_list_resource.remove(uuid);
                 }
-                */
             }
             ClientboundGamePacket::SetChunkCacheCenter(p) => {
                 debug!("Got chunk cache center packet {:?}", p);
@@ -799,7 +795,8 @@ pub fn process_packet_events(ecs: &mut World) {
             ClientboundGamePacket::SetExperience(p) => {
                 debug!("Got set experience packet {:?}", p);
             }
-            ClientboundGamePacket::TeleportEntity(p) => {
+            ClientboundGamePacket::TeleportEntity(_) => {
+                /*
                 let mut system_state: SystemState<(
                     Commands,
                     Query<(&EntityIdIndex, &LocalPlayer)>,
@@ -825,9 +822,12 @@ pub fn process_packet_events(ecs: &mut World) {
                 }
 
                 system_state.apply(ecs);
+                */
             }
-            ClientboundGamePacket::UpdateAdvancements(p) => {
+            ClientboundGamePacket::UpdateAdvancements(_) => {
+                /*
                 debug!("Got update advancements packet {:?}", p);
+                */
             }
             ClientboundGamePacket::RotateHead(_p) => {
                 // debug!("Got rotate head packet {:?}", p);
