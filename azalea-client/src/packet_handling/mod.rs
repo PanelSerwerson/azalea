@@ -57,7 +57,7 @@ impl Plugin for PacketHandlerPlugin {
                     game::handle_send_packet_event,
                 )
                     .chain(),
-                death_event_on_0_health.before(death_listener),
+                /*death_event_on_0_health.before(death_listener),*/
             ),
         )
         // we do this instead of add_event so we can handle the events ourselves
