@@ -409,14 +409,14 @@ pub fn process_packet_events(ecs: &mut World) {
                     reason: Some(p.reason.clone()),
                 });
             }
-            ClientboundGamePacket::UpdateRecipes(_p) => {
-                debug!("Got update recipes packet");
+            ClientboundGamePacket::UpdateRecipes(_) => {
+                /*debug!("Got update recipes packet");*/
             }
-            ClientboundGamePacket::EntityEvent(_p) => {
+            ClientboundGamePacket::EntityEvent(_) => {
                 // debug!("Got entity event packet {p:?}");
             }
-            ClientboundGamePacket::Recipe(_p) => {
-                debug!("Got recipe packet");
+            ClientboundGamePacket::Recipe(_) => {
+                /*debug!("Got recipe packet");*/
             }
             ClientboundGamePacket::PlayerPosition(p) => {
                 debug!("Got player position packet {p:?}");
@@ -514,7 +514,8 @@ pub fn process_packet_events(ecs: &mut World) {
                     .get(),
                 });
             }
-            ClientboundGamePacket::PlayerInfoUpdate(p) => {
+            ClientboundGamePacket::PlayerInfoUpdate(_) => {
+                /*
                 debug!("Got player info packet {p:?}");
 
                 #[allow(clippy::type_complexity)]
@@ -572,8 +573,10 @@ pub fn process_packet_events(ecs: &mut World) {
                 }
 
                 *tab_list_resource = tab_list.clone();
+                */
             }
-            ClientboundGamePacket::PlayerInfoRemove(p) => {
+            ClientboundGamePacket::PlayerInfoRemove(_) => {
+                /*
                 let mut system_state: SystemState<(
                     Query<&mut TabList>,
                     EventWriter<RemovePlayerEvent>,
@@ -605,9 +608,10 @@ pub fn process_packet_events(ecs: &mut World) {
                 partial_world
                     .chunks
                     .update_view_center(ChunkPos::new(p.x, p.z));
+                    */
             }
             ClientboundGamePacket::ChunksBiomes(_) => {}
-            ClientboundGamePacket::LightUpdate(_p) => {
+            ClientboundGamePacket::LightUpdate(_) => {
                 // debug!("Got light update packet {p:?}");
             }
             ClientboundGamePacket::LevelChunkWithLight(p) => {
@@ -710,7 +714,8 @@ pub fn process_packet_events(ecs: &mut World) {
 
                 system_state.apply(ecs);
             }
-            ClientboundGamePacket::SetEntityData(p) => {
+            ClientboundGamePacket::SetEntityData(_) => {
+                /*
                 debug!("Got set entity data packet {p:?}");
 
                 #[allow(clippy::type_complexity)]
@@ -753,6 +758,7 @@ pub fn process_packet_events(ecs: &mut World) {
                 });
 
                 system_state.apply(ecs);
+                */
             }
             ClientboundGamePacket::UpdateAttributes(_p) => {
                 // debug!("Got update attributes packet {p:?}");
@@ -808,7 +814,8 @@ pub fn process_packet_events(ecs: &mut World) {
             ClientboundGamePacket::SetDefaultSpawnPosition(p) => {
                 debug!("Got set default spawn position packet {p:?}");
             }
-            ClientboundGamePacket::SetHealth(p) => {
+            ClientboundGamePacket::SetHealth(_) => {
+                /*
                 debug!("Got set health packet {p:?}");
 
                 let mut system_state: SystemState<Query<(&mut Health, &mut Hunger)>> =
@@ -822,11 +829,13 @@ pub fn process_packet_events(ecs: &mut World) {
                 // the `Dead` component is added by the `update_dead` system
                 // in azalea-world and then the `dead_event` system fires
                 // the Death event.
+                */
             }
-            ClientboundGamePacket::SetExperience(p) => {
-                debug!("Got set experience packet {p:?}");
+            ClientboundGamePacket::SetExperience(_) => {
+                /*debug!("Got set experience packet {p:?}");*/
             }
-            ClientboundGamePacket::TeleportEntity(p) => {
+            ClientboundGamePacket::TeleportEntity(_) => {
+                /*
                 let mut system_state: SystemState<(
                     Commands,
                     Query<(&EntityIdIndex, &InstanceHolder)>,
@@ -860,11 +869,12 @@ pub fn process_packet_events(ecs: &mut World) {
                 }
 
                 system_state.apply(ecs);
+                */
             }
-            ClientboundGamePacket::UpdateAdvancements(p) => {
-                debug!("Got update advancements packet {p:?}");
+            ClientboundGamePacket::UpdateAdvancements(_) => {
+                /*debug!("Got update advancements packet {p:?}");*/
             }
-            ClientboundGamePacket::RotateHead(_p) => {
+            ClientboundGamePacket::RotateHead(_) => {
                 // debug!("Got rotate head packet {p:?}");
             }
             ClientboundGamePacket::MoveEntityPos(p) => {
@@ -1080,8 +1090,8 @@ pub fn process_packet_events(ecs: &mut World) {
 
                 world.chunks.set_block_state(&p.pos, p.block_state);
             }
-            ClientboundGamePacket::Animate(p) => {
-                debug!("Got animate packet {p:?}");
+            ClientboundGamePacket::Animate(_) => {
+                /*debug!("Got animate packet {p:?}");*/
             }
             ClientboundGamePacket::SectionBlocksUpdate(p) => {
                 debug!("Got section blocks update packet {p:?}");
@@ -1117,8 +1127,8 @@ pub fn process_packet_events(ecs: &mut World) {
                     _ => {}
                 }
             }
-            ClientboundGamePacket::LevelParticles(p) => {
-                debug!("Got level particles packet {p:?}");
+            ClientboundGamePacket::LevelParticles(_) => {
+                /*debug!("Got level particles packet {p:?}");*/
             }
             ClientboundGamePacket::ServerData(p) => {
                 debug!("Got server data packet {p:?}");
