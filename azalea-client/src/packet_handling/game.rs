@@ -595,6 +595,7 @@ pub fn process_packet_events(ecs: &mut World) {
                     }
                     tab_list_resource.remove(uuid);
                 }
+                */
             }
             ClientboundGamePacket::SetChunkCacheCenter(p) => {
                 debug!("Got chunk cache center packet {p:?}");
@@ -608,7 +609,6 @@ pub fn process_packet_events(ecs: &mut World) {
                 partial_world
                     .chunks
                     .update_view_center(ChunkPos::new(p.x, p.z));
-                    */
             }
             ClientboundGamePacket::ChunksBiomes(_) => {}
             ClientboundGamePacket::LightUpdate(_) => {
