@@ -791,12 +791,10 @@ impl PluginGroup for DefaultPlugins {
             .add(MinePlugin)
             .add(AttackPlugin)
             .add(TickBroadcastPlugin);
-        /*
         #[cfg(feature = "log")]
         {
             group = group.add(bevy_log::LogPlugin::default());
         }
-        */
         group
         
     }
