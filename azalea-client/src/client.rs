@@ -796,7 +796,8 @@ impl PluginGroup for DefaultPlugins {
         {
             group = group.add(bevy_log::LogPlugin::default());
         }
-        group
         */
+        group
+        
     }
 }
