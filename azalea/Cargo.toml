@@ -1,6 +1,6 @@
 [package]
 description = "A framework for creating Minecraft bots."
-edition = "2021"
+edition = "2024"
 license = "MIT"
 name = "azalea"
 repository = "https://github.com/azalea-rs/azalea/tree/main/azalea"
