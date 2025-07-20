@@ -760,7 +760,7 @@ pub fn process_packet_events(ecs: &mut World) {
                 system_state.apply(ecs);
                 */
             }
-            ClientboundGamePacket::UpdateAttributes(_p) => {
+            ClientboundGamePacket::UpdateAttributes(_) => {
                 // debug!("Got update attributes packet {p:?}");
             }
             ClientboundGamePacket::SetEntityMotion(p) => {
