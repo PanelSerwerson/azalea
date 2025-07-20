@@ -16,7 +16,7 @@ pub mod chat;
 mod client;
 pub mod disconnect;
 mod entity_query;
-mod events;
+pub mod events;
 mod get_mc_dir;
 pub mod interact;
 pub mod inventory;
