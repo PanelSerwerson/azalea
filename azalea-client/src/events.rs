@@ -134,7 +134,7 @@ impl Plugin for EventPlugin {
 }
 
 // when LocalPlayerEvents is added, it means the client just started
-fn init_listener(query: Query<&LocalPlayerEvents, Added<LocalPlayerEvents>>) {
+pub fn init_listener(query: Query<&LocalPlayerEvents, Added<LocalPlayerEvents>>) {
     for local_player_events in &query {
         let _ = local_player_events.send(Event::Init);
     }
@@ -147,7 +147,7 @@ fn login_listener(query: Query<&LocalPlayerEvents, Added<MinecraftEntityId>>) {
     }
 }
 
-fn chat_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<ChatReceivedEvent>) {
+pub fn chat_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<ChatReceivedEvent>) {
     for event in events.read() {
         let local_player_events = query
             .get(event.entity)
@@ -163,7 +163,7 @@ fn tick_listener(query: Query<&LocalPlayerEvents, With<InstanceName>>) {
     }
 }
 
-fn packet_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<PacketEvent>) {
+pub fn packet_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<PacketEvent>) {
     for event in events.read() {
         let local_player_events = query
             .get(event.entity)
