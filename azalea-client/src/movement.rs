@@ -275,7 +275,7 @@ pub fn send_sprinting_if_needed(
 
 /// Update the impulse from self.move_direction. The multiplier is used for
 /// sneaking.
-pub(crate) fn tick_controls(mut query: Query<&mut PhysicsState>) {
+pub fn tick_controls(mut query: Query<&mut PhysicsState>) {
     for mut physics_state in query.iter_mut() {
         let multiplier: Option<f32> = None;
 
