@@ -861,7 +861,7 @@ impl PluginGroup for DefaultPlugins {
     fn build(self) -> PluginGroupBuilder {
         #[allow(unused_mut)]
         let mut group = PluginGroupBuilder::start::<Self>()
-            .add(AmbiguityLoggerPlugin)
+            //.add(AmbiguityLoggerPlugin)
             .add(TimePlugin)
             .add(PacketHandlerPlugin)
             .add(AzaleaPlugin)
