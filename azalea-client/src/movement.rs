@@ -247,7 +247,7 @@ pub fn send_position(
     }
 }
 
-fn send_sprinting_if_needed(
+pub fn send_sprinting_if_needed(
     mut query: Query<(Entity, &MinecraftEntityId, &Sprinting, &mut PhysicsState)>,
     mut send_packet_events: EventWriter<SendPacketEvent>,
 ) {
