@@ -222,7 +222,7 @@ fn keepalive_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<
     }
 }
 
-fn disconnect_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<DisconnectEvent>) {
+pub fn disconnect_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<DisconnectEvent>) {
     for event in events.read() {
         if let Ok(local_player_events) = query.get(event.entity) {
             let _ = local_player_events.send(Event::Disconnect(event.reason.clone()));
