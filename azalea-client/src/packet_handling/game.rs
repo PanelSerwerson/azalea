@@ -198,7 +198,7 @@ pub fn process_packet_events(ecs: &mut World) {
         match packet_ref {
             ClientboundGamePacket::Login(p) => {
                 debug!("Got login packet");
-
+                debug!("[!] MAX PLAYERS: {}", p.max_players.to_string());
                 #[allow(clippy::type_complexity)]
                 let mut system_state: SystemState<(
                     Commands,
