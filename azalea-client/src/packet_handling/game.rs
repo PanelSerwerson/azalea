@@ -233,7 +233,14 @@ pub fn process_packet_events(ecs: &mut World) {
                 ) = query.get_mut(player_entity).unwrap();
 
                 {
-                    let new_instance_name = p.common.dimension.clone();
+                    //let new_instance_name = p.common.dimension.clone();
+                    let new_instance_name = ResourceLocation {
+                        namespace: "minecraft".to_string(),
+                        path: "overworld".to_string(),
+                    };
+                    
+                    let dimension_type = DimensionType::Overworld;
+                    let dimension_resource = new_instance_name.clone();
 
                     if let Some(mut instance_name) = instance_name {
                         *instance_name = instance_name.clone();
@@ -250,13 +257,17 @@ pub fn process_packet_events(ecs: &mut World) {
                         continue;
                     };
 
+                    let dimension = dimension_type_element
+                        .map
+                        .get(&dimension_resource);
+                    /*
                     let dimension_type =
                         ResourceLocation::new(&p.common.dimension_type.to_string());
 
                     let dimension = dimension_type_element
                         .map
                         .get(&dimension_type)
-                        .unwrap_or_else(|| panic!("No dimension_type with name {dimension_type}"));
+                        .unwrap_or_else(|| panic!("No dimension_type with name {dimension_type}"));*/
 
                     // add this world to the instance_container (or don't if it's already
                     // there)
