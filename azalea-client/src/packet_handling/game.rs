@@ -273,8 +273,10 @@ pub fn process_packet_events(ecs: &mut World) {
                     // there)
                     let weak_instance = instance_container.insert(
                         new_instance_name.clone(),
-                        dimension.height,
-                        dimension.min_y,
+                        /*dimension.height,
+                        dimension.min_y,*/
+                        dimension.unwrap().height,
+                        dimension.unwrap().min_y,
                     );
                     instance_loaded_events.send(InstanceLoadedEvent {
                         entity: player_entity,
