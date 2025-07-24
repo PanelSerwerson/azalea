@@ -238,6 +238,8 @@ pub fn process_packet_events(ecs: &mut World) {
                         namespace: "minecraft".to_string(),
                         path: "overworld".to_string(),
                     };
+                    debug!("[MY] new_instance_name: {}", new_instance_name);
+                    debug!("[OLD] new_instance_name: {}", p.common.dimension.clone());
                     
                     let dimension_type = azalea_registry::DimensionType::Overworld;
                     let dimension_resource = new_instance_name.clone();
