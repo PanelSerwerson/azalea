@@ -241,7 +241,7 @@ pub fn process_packet_events(ecs: &mut World) {
                     debug!("[MY] new_instance_name: {}", new_instance_name);
                     debug!("[OLD] new_instance_name: {}", p.common.dimension.clone());
                     
-                    let dimension_type = ResourceLocation::new(&azalea_registry::DimensionType::Overworld);
+                    let dimension_type = ResourceLocation::new(&azalea_registry::DimensionType::Overworld.to_string());
                     debug!("[MY] dimension_type: {}", dimension_type);
                     debug!("[OLD] dimension_type: {}", ResourceLocation::new(&p.common.dimension_type.to_string()));
 
