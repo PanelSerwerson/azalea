@@ -341,7 +341,7 @@ pub fn process_packet_events(ecs: &mut World) {
                         &mut entity_uuid_index,
                         &mut instance_holder.instance.write(),
                     );
-                    debug!("[MY] I WAS HERE #5";
+                    debug!("[MY] I WAS HERE #5");
                     // update or insert loaded_by
                     if let Some(mut loaded_by) = loaded_by {
                         loaded_by.insert(player_entity);
