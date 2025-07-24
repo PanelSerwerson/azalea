@@ -239,7 +239,7 @@ pub fn process_packet_events(ecs: &mut World) {
                         path: "overworld".to_string(),
                     };
                     
-                    let dimension_type = DimensionType::Overworld;
+                    let dimension_type = azalea_registry::DimensionType::Overworld;
                     let dimension_resource = new_instance_name.clone();
 
                     if let Some(mut instance_name) = instance_name {
