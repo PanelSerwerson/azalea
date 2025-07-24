@@ -259,7 +259,8 @@ pub fn process_packet_events(ecs: &mut World) {
 
                     let dimension = dimension_type_element
                         .map
-                        .get(&dimension_resource);
+                        .get(&dimension_resource)
+                        .unwrap_or_else(|| panic!("No dimension_type with name {dimension_type}"));
                     /*
                     let dimension_type =
                         ResourceLocation::new(&p.common.dimension_type.to_string());
@@ -273,10 +274,8 @@ pub fn process_packet_events(ecs: &mut World) {
                     // there)
                     let weak_instance = instance_container.insert(
                         new_instance_name.clone(),
-                        /*dimension.height,
-                        dimension.min_y,*/
-                        dimension.unwrap().height,
-                        dimension.unwrap().min_y,
+                        dimension.height,
+                        dimension.min_y,
                     );
                     instance_loaded_events.send(InstanceLoadedEvent {
                         entity: player_entity,
