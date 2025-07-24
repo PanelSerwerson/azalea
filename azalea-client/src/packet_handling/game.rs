@@ -241,7 +241,7 @@ pub fn process_packet_events(ecs: &mut World) {
                     debug!("[MY] new_instance_name: {}", new_instance_name);
                     debug!("[OLD] new_instance_name: {}", p.common.dimension.clone());
                     
-                    let dimension_type = azalea_registry::DimensionType::Overworld;
+                    let dimension_type = ResourceLocation::new(&azalea_registry::DimensionType::Overworld);
                     debug!("[MY] dimension_type: {}", dimension_type);
                     debug!("[OLD] dimension_type: {}", ResourceLocation::new(&p.common.dimension_type.to_string()));
 
@@ -264,6 +264,7 @@ pub fn process_packet_events(ecs: &mut World) {
                         .map
                         .get(&dimension_type)
                         .unwrap_or_else(|| panic!("No dimension_type with name {dimension_type}"));
+                    debug!("[MY] I WAS HERE #1";
                     /*
                     let dimension_type =
                         ResourceLocation::new(&p.common.dimension_type.to_string());
@@ -285,6 +286,7 @@ pub fn process_packet_events(ecs: &mut World) {
                         name: new_instance_name.clone(),
                         instance: Arc::downgrade(&weak_instance),
                     });
+                    debug!("[MY] I WAS HERE #2";
 
                     // set the partial_world to an empty world
                     // (when we add chunks or entities those will be in the
@@ -310,7 +312,7 @@ pub fn process_packet_events(ecs: &mut World) {
                         }
                     }
                     instance_holder.instance = weak_instance;
-
+                    debug!("[MY] I WAS HERE #3";
                     let player_bundle = PlayerBundle {
                         entity: EntityBundle::new(
                             game_profile.uuid,
@@ -339,7 +341,7 @@ pub fn process_packet_events(ecs: &mut World) {
                         &mut entity_uuid_index,
                         &mut instance_holder.instance.write(),
                     );
-
+                    debug!("[MY] I WAS HERE #5";
                     // update or insert loaded_by
                     if let Some(mut loaded_by) = loaded_by {
                         loaded_by.insert(player_entity);
