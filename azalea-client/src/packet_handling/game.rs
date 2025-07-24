@@ -242,6 +242,8 @@ pub fn process_packet_events(ecs: &mut World) {
                     debug!("[OLD] new_instance_name: {}", p.common.dimension.clone());
                     
                     let dimension_type = azalea_registry::DimensionType::Overworld;
+                    debug!("[MY] dimension_type: {}", dimension_type);
+                    debug!("[OLD] dimension_type: {}", ResourceLocation::new(&p.common.dimension_type.to_string()));
                     let dimension_resource = new_instance_name.clone();
 
                     if let Some(mut instance_name) = instance_name {
@@ -263,6 +265,12 @@ pub fn process_packet_events(ecs: &mut World) {
                         .map
                         .get(&dimension_resource)
                         .unwrap_or_else(|| panic!("No dimension_type with name {dimension_type}"));
+                    let old_dimension = dimension_type_element
+                        .map
+                        .get(&ResourceLocation::new(&p.common.dimension_type.to_string()))
+                        .unwrap_or_else(|| panic!("No dimension_type with name {dimension_type}"));
+                    debug!("[MY] dimension: {}", dimension);
+                    debug!("[OLD] dimension: {}", old_dimension);
                     /*
                     let dimension_type =
                         ResourceLocation::new(&p.common.dimension_type.to_string());
