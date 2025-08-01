@@ -49,6 +49,7 @@ log = "0.4.22"
 azalea-entity = { version = "0.10.0", path = "../azalea-entity" }
 azalea-inventory = { version = "0.10.0", path = "../azalea-inventory" }
 socks5-impl = "0.5.14"
+socket2 = { version = "0.5", features = ["all"] } # AZALEA PLUS
 
 [features]
 connecting = []
