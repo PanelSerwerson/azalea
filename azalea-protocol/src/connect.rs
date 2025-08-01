@@ -25,9 +25,6 @@ use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf, ReuniteError};
 use tokio::net::TcpStream;
 use tracing::{error, info};
 use uuid::Uuid;
-// AZALEA PLUS
-use socket2::{Socket, Domain, Type, SockAddr};
-use std::time::Duration;
 
 pub struct RawReadConnection {
     pub read_stream: OwnedReadHalf,
@@ -278,22 +275,8 @@ impl Proxy {
 impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
     /// Create a new connection to the given address.
     pub async fn new(address: &SocketAddr) -> Result<Self, ConnectionError> {
-        /*
         let stream = TcpStream::connect(address).await?;
         stream.set_nodelay(true)?;
-        Self::new_from_stream(stream).await*/
-        let domain = Domain::for_address(*address);
-        let socket = Socket::new(domain, Type::STREAM, None)?;
-        socket.set_reuse_address(true)?;
-        socket.set_reuse_port(true)?;
-        socket.set_nodelay(true)?;
-        
-        let sockaddr = SockAddr::from(*address);
-        socket.connect_timeout(&sockaddr, Duration::from_secs(15))?;
-        
-        let stream: std::net::TcpStream = socket.into();
-        let stream = TcpStream::from_std(stream)?;
-
         Self::new_from_stream(stream).await
     }
 
