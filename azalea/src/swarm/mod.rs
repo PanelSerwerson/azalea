@@ -384,7 +384,7 @@ where
 
         // SwarmBuilder (self) isn't Send so we have to take all the things we need out
         // of it
-        let mut swarm_clone = swarm.clone();
+        let swarm_clone = swarm.clone();
         let join_delay = self.join_delay;
         let accounts = self.accounts.clone();
         let states = self.states.clone();
@@ -395,9 +395,7 @@ where
                 for ((account, bot_join_opts), state) in accounts.iter().zip(states) {
                     let mut join_opts = default_join_opts.clone();
                     join_opts.update(bot_join_opts);
-                    swarm_clone
-                        .add_and_retry_forever_with_opts(account, state, &join_opts)
-                        .await;
+                    let _ = swarm_clone.add_with_opts(account, state, &join_opts).await;
                     tokio::time::sleep(join_delay).await;
                 }
             } else {
