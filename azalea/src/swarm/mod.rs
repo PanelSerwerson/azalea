@@ -384,7 +384,7 @@ where
 
         // SwarmBuilder (self) isn't Send so we have to take all the things we need out
         // of it
-        let swarm_clone = swarm.clone();
+        let mut swarm_clone = swarm.clone();
         let join_delay = self.join_delay;
         let accounts = self.accounts.clone();
         let states = self.states.clone();
