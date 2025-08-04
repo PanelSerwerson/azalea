@@ -5,7 +5,7 @@ use uuid::Uuid;
 #[derive(Clone, Debug, PartialEq, Eq, McBuf, ServerboundLoginPacket)]
 pub struct ServerboundHelloPacket {
     pub name: String,
-    pub profile_id: Uuid,
+    pub profile_id: Option<Uuid>,
 }
 
 #[cfg(test)]
