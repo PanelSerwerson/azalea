@@ -141,7 +141,7 @@ pub fn init_listener(query: Query<&LocalPlayerEvents, Added<LocalPlayerEvents>>)
 }
 
 // when MinecraftEntityId is added, it means the player is now in the world
-fn login_listener(query: Query<&LocalPlayerEvents, Added<MinecraftEntityId>>) {
+pub fn login_listener(query: Query<&LocalPlayerEvents, Added<MinecraftEntityId>>) {
     for local_player_events in &query {
         let _ = local_player_events.send(Event::Login);
     }
