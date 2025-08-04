@@ -213,7 +213,7 @@ pub fn death_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<
     }
 }
 
-fn keepalive_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<KeepAliveEvent>) {
+pub fn keepalive_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<KeepAliveEvent>) {
     for event in events.read() {
         let local_player_events = query
             .get(event.entity)
