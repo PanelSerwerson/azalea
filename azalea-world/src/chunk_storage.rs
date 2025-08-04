@@ -132,7 +132,8 @@ impl PartialChunkStorage {
     }
 
     pub fn index_from_chunk_pos(&self, chunk_pos: &ChunkPos) -> usize {
-        let view_range = u32::max(self.view_range, 1) as i32;
+        /*let view_range = u32::max(self.view_range, 1) as i32;*/
+        let view_range = self.view_range as i32;
         if view_range > 0 {
             let x = i32::rem_euclid(chunk_pos.x, view_range) * view_range;
             let z = i32::rem_euclid(chunk_pos.z, view_range);
