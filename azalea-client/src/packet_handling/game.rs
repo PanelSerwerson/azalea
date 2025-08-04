@@ -887,7 +887,8 @@ pub fn process_packet_events(ecs: &mut World) {
             ClientboundGamePacket::RotateHead(_) => {
                 // debug!("Got rotate head packet {p:?}");
             }
-            ClientboundGamePacket::MoveEntityPos(p) => {
+            ClientboundGamePacket::MoveEntityPos(_) => {
+                /*
                 let mut system_state: SystemState<(
                     Commands,
                     Query<(&EntityIdIndex, &InstanceHolder)>,
@@ -917,6 +918,7 @@ pub fn process_packet_events(ecs: &mut World) {
                 }
 
                 system_state.apply(ecs);
+                */
             }
             ClientboundGamePacket::MoveEntityPosRot(p) => {
                 let mut system_state: SystemState<(
