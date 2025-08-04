@@ -89,11 +89,11 @@ impl Default for Chunk {
 
 impl PartialChunkStorage {
     pub fn new(chunk_radius: u32) -> Self {
-        if chunk_radius > 1 {
-            let view_range = chunk_radius * 2 + 1;
-        } else{
-            let view_range = chunk_radius;
-        }
+        let view_range = if chunk_radius > 1 {
+            chunk_radius * 2 + 1
+        } else {
+            chunk_radius
+        };
         PartialChunkStorage {
             view_center: ChunkPos::new(0, 0),
             chunk_radius,
