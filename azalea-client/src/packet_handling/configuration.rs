@@ -246,7 +246,7 @@ pub fn handle_send_packet_event(
 ) {
     for event in send_packet_events.read() {
         if let Ok(raw_connection) = query.get_mut(event.entity) {
-            debug!("Sending packet: {:?}", event.packet);
+            //debug!("Sending packet: {:?}", event.packet);
             if let Err(e) = raw_connection.write_packet(event.packet.clone()) {
                 error!("Failed to send packet: {e}");
             }
