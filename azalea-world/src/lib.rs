@@ -8,7 +8,7 @@ pub mod find_blocks;
 pub mod heightmap;
 pub mod iterators;
 pub mod palette;
-mod world;
+pub mod world;
 
 use std::backtrace::Backtrace;
 
