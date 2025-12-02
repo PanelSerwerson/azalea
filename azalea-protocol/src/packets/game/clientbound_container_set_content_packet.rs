@@ -13,7 +13,7 @@ pub struct ClientboundContainerSetContentPacket {
 }
 */
 
-use azalea_buf::{McBufReadable, BufReadExt}; // Dodano BufReadExt do czytania VarInt
+use azalea_buf::{McBufReadable, BufReadExt};
 use azalea_inventory::ItemSlot;
 use azalea_protocol_macros::ClientboundGamePacket;
 use std::io::{self, Cursor};
