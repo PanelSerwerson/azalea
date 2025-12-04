@@ -2,10 +2,6 @@ use azalea_buf::McBuf;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
-////////////////
-use std::{io::{self, Read, Write}, sync::Arc};
-use azalea_buf::{McBufReadable, McBufWritable, BufReadError};
-////////////////
 
 #[derive(McBuf, Debug, Clone, Default, Eq, PartialEq)]
 pub struct GameProfile {
@@ -34,7 +30,7 @@ impl From<SerializableGameProfile> for GameProfile {
                 value.name,
                 ProfilePropertyValue {
                     value: value.value,
-                    signature: value.signature,
+                    signature: None,
                 },
             );
         }
@@ -46,60 +42,11 @@ impl From<SerializableGameProfile> for GameProfile {
     }
 }
 
-///////////////////////////////////////////
-/*#[derive(McBuf, Debug, Clone, Eq, PartialEq)]
-pub struct ProfilePropertyValue {
-    pub value: String,
-    pub signature: Option<String>,
-}*/
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(McBuf, Debug, Clone, Eq, PartialEq)]
 pub struct ProfilePropertyValue {
     pub value: String,
     pub signature: Option<String>,
 }
-
-// Implementacja McBufReadable
-impl McBufReadable for ProfilePropertyValue {
-    fn read_from(buf: &mut impl Read) -> Result<Self, BufReadError> {
-        // 1. Wczytujemy wartość (tekstura)
-        let value = String::read_from(buf)?;
-        
-        // 2. Wczytujemy sygnaturę (Option<String> obsługuje format MC)
-        let signature = Option::<String>::read_from(buf)?;
-
-        // 3. Sprawdzamy limity *po* wczytaniu
-        const MAX_VALUE_LEN: usize = 32767; // Domyślny limit protokołu
-        const MAX_SIGNATURE_LEN: usize = 1024; // Limit, który chcesz narzucić
-
-        if value.len() > MAX_VALUE_LEN {
-            return Err(BufReadError::UnexpectedStringLength {
-                len: value.len(),
-                max: MAX_VALUE_LEN,
-            });
-        }
-        
-        if let Some(sig) = &signature {
-            if sig.len() > MAX_SIGNATURE_LEN {
-                return Err(BufReadError::UnexpectedStringLength {
-                    len: sig.len(),
-                    max: MAX_SIGNATURE_LEN,
-                });
-            }
-        }
-
-        Ok(ProfilePropertyValue { value, signature })
-    }
-}
-
-// Implementacja McBufWritable (nie ma limitów, tylko zapis)
-impl McBufWritable for ProfilePropertyValue {
-    fn write_into(&self, buf: &mut impl Write) -> Result<(), io::Error> {
-        self.value.write_into(buf)?;
-        self.signature.write_into(buf)?;
-        Ok(())
-    }
-}
-////////////////////////////////////////
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerializableGameProfile {
