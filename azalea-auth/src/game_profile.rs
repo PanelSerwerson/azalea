@@ -29,8 +29,8 @@ impl From<SerializableGameProfile> for GameProfile {
             properties.insert(
                 value.name,
                 ProfilePropertyValue {
-                    value: String::new(),
-                    signature: None,
+                    value: value.value,
+                    signature: value.signature,
                 },
             );
         }
@@ -61,8 +61,8 @@ impl From<GameProfile> for SerializableGameProfile {
         for (key, value) in value.properties {
             properties.push(SerializableProfilePropertyValue {
                 name: key,
-                value: String::new(),
-                signature: None,
+                value: value.value,
+                signature: value.signature,
             });
         }
         Self {
