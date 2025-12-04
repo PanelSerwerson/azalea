@@ -4,8 +4,9 @@ use std::{
 };
 
 use azalea_buf::{
-    McBuf, McBufReadable, AzaleaReadLimited, McBufVarReadable, McBufWritable, McBufVarWritable, BufReadError,
+    McBuf, McBufReadable, McBufVarReadable, McBufWritable, McBufVarWritable, BufReadError,
 };
+use azalea_buf::read::AzaleaReadLimited;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize, Serializer};
 use uuid::Uuid;
