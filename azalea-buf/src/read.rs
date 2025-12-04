@@ -5,6 +5,7 @@ use std::{
     collections::HashMap,
     hash::Hash,
     io::{Cursor, Read},
+    sync::Arc,
 };
 use thiserror::Error;
 use tracing::warn;
