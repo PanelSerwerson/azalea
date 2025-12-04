@@ -1,4 +1,4 @@
-use azalea_auth::game_profile::{GameProfile, ProfilePropertyValue};
+use azalea_auth::game_profile::{GameProfile, GameProfileProperties};
 use azalea_buf::{
     BufReadError, McBuf, McBufReadable, McBufVarReadable, McBufVarWritable, McBufWritable,
 };
@@ -32,7 +32,7 @@ pub struct PlayerInfoEntry {
 #[derive(Clone, Debug, McBuf)]
 pub struct AddPlayerAction {
     pub name: String,
-    pub properties: HashMap<String, ProfilePropertyValue>,
+    pub properties: GameProfileProperties,
 }
 #[derive(Clone, Debug, McBuf)]
 pub struct InitializeChatAction {
