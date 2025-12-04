@@ -111,7 +111,7 @@ impl McBufWritable for ClientboundPlayerInfoUpdatePacket {
             if self.actions.add_player {
                 AddPlayerAction {
                     name: entry.profile.name.clone(),
-                    properties: entry.profile.properties.clone(),
+                    properties: (*entry.profile.properties).clone(), // PLUS
                 }
                 .write_into(buf)?;
             }
