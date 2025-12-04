@@ -407,6 +407,12 @@ where
 }
 
 //////
+impl<A: McBufReadable, B: McBufReadable> McBufReadable for (A, B) {
+    fn read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError> {
+        Ok((A::read_from(buf)?, B::read_from(buf)?))
+    }
+}
+
 impl<T: McBufReadable> McBufReadable for Arc<T> {
     fn read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError> {
         Ok(Arc::new(T::read_from(buf)?))
