@@ -62,7 +62,7 @@ impl From<GameProfile> for SerializableGameProfile {
             properties.push(SerializableProfilePropertyValue {
                 name: key,
                 value: value.value,
-                signature: value.signature,
+                signature: None,
             });
         }
         Self {
