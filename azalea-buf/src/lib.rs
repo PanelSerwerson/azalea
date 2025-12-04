@@ -10,7 +10,7 @@ mod write;
 
 pub use azalea_buf_macros::*;
 pub use definitions::*;
-pub use read::{BufReadError, McBufReadable, McBufVarReadable};
+pub use read::{BufReadError, AzaleaReadLimited, McBufReadable, McBufVarReadable};
 pub use serializable_uuid::*;
 pub use write::{McBufVarWritable, McBufWritable};
 
