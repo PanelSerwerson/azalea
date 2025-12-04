@@ -70,7 +70,7 @@ impl McBufReadable for ClientboundPlayerInfoUpdatePacket {
             if actions.add_player {
                 let action = AddPlayerAction::read_from(buf)?;
                 entry.profile.name = action.name;
-                entry.profile.properties = action.properties;
+                entry.profile.properties = Arc::new(action.properties); // PLUS
             }
             if actions.initialize_chat {
                 let action = InitializeChatAction::read_from(buf)?;
