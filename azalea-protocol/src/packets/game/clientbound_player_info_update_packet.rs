@@ -6,8 +6,8 @@ use azalea_chat::FormattedText;
 use azalea_core::{bitset::FixedBitSet, game_type::GameMode};
 use azalea_protocol_macros::ClientboundGamePacket;
 use std::{
-    collections::HashMap,
-    io::{Cursor, Write},
+    io::{self, Cursor, Write},
+    sync::Arc,
 };
 use uuid::Uuid;
 
