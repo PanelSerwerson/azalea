@@ -404,3 +404,11 @@ where
         Ok(Box::new(T::read_from(buf)?))
     }
 }
+
+//////
+impl<T: McBufReadable> McBufReadable for Arc<T> {
+    fn read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError> {
+        Ok(Arc::new(T::read_from(buf)?))
+    }
+}
+///////
