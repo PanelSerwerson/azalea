@@ -1,6 +1,11 @@
 use super::{UnsizedByteArray, MAX_STRING_LENGTH};
 use byteorder::{BigEndian, WriteBytesExt};
-use std::{collections::HashMap, io::Write};
+use std::{
+    collections::HashMap,
+    io::{self, Write},
+    sync::Arc,
+};
+
 
 fn write_utf_with_len(
     buf: &mut impl Write,
