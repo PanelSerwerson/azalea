@@ -340,7 +340,7 @@ impl<T: McBufVarReadable> McBufVarReadable for Option<T> {
 ///////////
 impl<T: AzaleaReadLimited> AzaleaReadLimited for Option<T> {
     fn azalea_read_limited(buf: &mut Cursor<&[u8]>, limit: usize) -> Result<Self, BufReadError> {
-        let present = bool::azalea_read(buf)?;
+        let present = bool::read_from(buf)?;
         Ok(if present {
             Some(T::azalea_read_limited(buf, limit)?)
         } else {
