@@ -29,7 +29,7 @@ impl From<SerializableGameProfile> for GameProfile {
             properties.insert(
                 value.name,
                 ProfilePropertyValue {
-                    value: value.value,
+                    value: None,
                     signature: None,
                 },
             );
@@ -61,7 +61,7 @@ impl From<GameProfile> for SerializableGameProfile {
         for (key, value) in value.properties {
             properties.push(SerializableProfilePropertyValue {
                 name: key,
-                value: value.value,
+                value: None,
                 signature: None,
             });
         }
