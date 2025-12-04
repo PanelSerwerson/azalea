@@ -290,3 +290,17 @@ where
         T::write_into(&**self, buf)
     }
 }
+////////////
+impl<A: McBufWritable, B: McBufWritable> McBufWritable for (A, B) {
+    fn write_into(&self, buf: &mut impl Write) -> io::Result<()> {
+        self.0.write_into(buf)?;
+        self.1.write_into(buf)
+    }
+}
+
+impl<T: McBufWritable> McBufWritable for Arc<T> {
+    fn write_into(&self, buf: &mut impl Write) -> io::Result<()> {
+        T::write_into(&**self, buf)
+    }
+}
+/////////////
