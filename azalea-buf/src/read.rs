@@ -233,6 +233,14 @@ impl McBufReadable for String {
     }
 }
 
+/////////
+impl AzaleaReadLimited for String {
+    fn azalea_read_limited(buf: &mut Cursor<&[u8]>, limit: usize) -> Result<Self, BufReadError> {
+        read_utf_with_len(buf, limit as u32)
+    }
+}
+/////////
+
 impl McBufReadable for u32 {
     fn read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError> {
         Ok(i32::read_from(buf)? as u32)
