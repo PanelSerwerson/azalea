@@ -117,6 +117,15 @@ where
     fn var_read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError>;
 }
 
+////////
+pub trait AzaleaReadLimited
+where
+    Self: Sized,
+{
+    fn azalea_read_limited(buf: &mut Cursor<&[u8]>, limit: usize) -> Result<Self, BufReadError>;
+}
+////////
+
 impl McBufReadable for i32 {
     fn read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError> {
         Ok(buf.read_i32::<BE>()?)
@@ -328,6 +337,18 @@ impl<T: McBufVarReadable> McBufVarReadable for Option<T> {
         })
     }
 }
+///////////
+impl<T: AzaleaReadLimited> AzaleaReadLimited for Option<T> {
+    fn azalea_read_limited(buf: &mut Cursor<&[u8]>, limit: usize) -> Result<Self, BufReadError> {
+        let present = bool::azalea_read(buf)?;
+        Ok(if present {
+            Some(T::azalea_read_limited(buf, limit)?)
+        } else {
+            None
+        })
+    }
+}
+//////////
 
 // [String; 4]
 impl<T: McBufReadable, const N: usize> McBufReadable for [T; N] {
