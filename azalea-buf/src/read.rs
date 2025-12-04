@@ -17,8 +17,12 @@ pub enum BufReadError {
     InvalidVarLong,
     #[error("Error reading bytes")]
     CouldNotReadBytes,
-    #[error("The received encoded string buffer length is longer than maximum allowed ({length} > {max_length})")]
+    #[error(
+        "The received encoded string buffer length is longer than maximum allowed ({length} > {max_length})"
+    )]
     StringLengthTooLong { length: u32, max_length: u32 },
+    #[error("The received Vec length is longer than maximum allowed ({length} > {max_length})")]
+    VecLengthTooLong { length: u32, max_length: u32 },
     #[error("{source}")]
     Io {
         #[from]
