@@ -5,8 +5,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug, McBuf, ServerboundGamePacket)]
 pub struct ServerboundContainerClickPacket {
-    #[var] // PLUS
-    pub container_id: i32, // PLUS
+    pub container_id: u8,
     #[var]
     pub state_id: u32,
     pub slot_num: i16,
