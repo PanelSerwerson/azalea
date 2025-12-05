@@ -718,7 +718,7 @@ pub fn handle_container_click_event(
 pub struct SetContainerContentEvent {
     pub entity: Entity,
     pub slots: Vec<ItemSlot>,
-    pub container_id: u8,
+    pub container_id: i32, // PLUS
 }
 fn handle_set_container_content_event(
     mut events: EventReader<SetContainerContentEvent>,
