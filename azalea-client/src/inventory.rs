@@ -673,7 +673,7 @@ pub fn handle_container_click_event(
 ) {
     for event in events.read() {
         let (entity, mut inventory) = query.get_mut(event.entity).unwrap();
-        if inventory.id != event.window_id {
+        if inventory.id as i32 != event.window_id { // PLUS
             warn!(
                 "Tried to click container with ID {}, but the current container ID is {}",
                 event.window_id, inventory.id
@@ -727,7 +727,7 @@ fn handle_set_container_content_event(
     for event in events.read() {
         let mut inventory = query.get_mut(event.entity).unwrap();
 
-        if event.container_id != inventory.id {
+        if event.container_id != inventory.id as i32 { // PLUS
             warn!(
                 "Tried to set container content with ID {}, but the current container ID is {}",
                 event.container_id, inventory.id
