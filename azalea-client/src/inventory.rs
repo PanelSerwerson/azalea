@@ -663,7 +663,7 @@ pub fn handle_client_side_close_container_event(
 #[derive(Event, Debug)]
 pub struct ContainerClickEvent {
     pub entity: Entity,
-    pub window_id: u8,
+    pub window_id: i32, // PLUS
     pub operation: ClickOperation,
 }
 pub fn handle_container_click_event(
