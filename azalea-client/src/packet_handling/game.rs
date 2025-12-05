@@ -1181,7 +1181,7 @@ pub fn process_packet_events(ecs: &mut World) {
                     events.send(SetContainerContentEvent {
                         entity: player_entity,
                         slots: p.items.clone(),
-                        container_id: p.container_id as i32, // PLUS
+                        container_id: p.container_id,
                     });
                 }
             }
