@@ -663,7 +663,7 @@ pub fn handle_client_side_close_container_event(
 #[derive(Event, Debug)]
 pub struct ContainerClickEvent {
     pub entity: Entity,
-    pub window_id: i32, // PLUS
+    pub window_id: u8,
     pub operation: ClickOperation,
 }
 pub fn handle_container_click_event(
@@ -673,7 +673,7 @@ pub fn handle_container_click_event(
 ) {
     for event in events.read() {
         let (entity, mut inventory) = query.get_mut(event.entity).unwrap();
-        if inventory.id as i32 != event.window_id { // PLUS
+        if inventory.id != event.window_id {
             warn!(
                 "Tried to click container with ID {}, but the current container ID is {}",
                 event.window_id, inventory.id
@@ -718,7 +718,7 @@ pub fn handle_container_click_event(
 pub struct SetContainerContentEvent {
     pub entity: Entity,
     pub slots: Vec<ItemSlot>,
-    pub container_id: i32, // PLUS
+    pub container_id: u8,
 }
 fn handle_set_container_content_event(
     mut events: EventReader<SetContainerContentEvent>,
@@ -727,7 +727,7 @@ fn handle_set_container_content_event(
     for event in events.read() {
         let mut inventory = query.get_mut(event.entity).unwrap();
 
-        if event.container_id != inventory.id as i32 { // PLUS
+        if event.container_id != inventory.id {
             warn!(
                 "Tried to set container content with ID {}, but the current container ID is {}",
                 event.container_id, inventory.id
