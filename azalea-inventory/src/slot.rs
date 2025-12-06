@@ -159,7 +159,7 @@ impl McBufReadable for ItemSlot {
 impl McBufWritable for ItemSlot {
     fn write_into(&self, buf: &mut impl Write) -> Result<(), std::io::Error> {
         match self {
-            ItemSlot::Empty => 0_i32.var_write_into(buf)?, // PLUS
+            ItemSlot::Empty => 0.var_write_into(buf)?,
             ItemSlot::Present(i) => {
                 i.count.var_write_into(buf)?;
                 i.kind.write_into(buf)?;
