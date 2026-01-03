@@ -842,7 +842,7 @@ pub fn process_packet_events(ecs: &mut World) {
             ClientboundGamePacket::SetExperience(_) => {
                 /*debug!("Got set experience packet {p:?}");*/
             }
-            ClientboundGamePacket::TeleportEntity(_) => {
+            ClientboundGamePacket::TeleportEntity(p) => {
                 let mut system_state: SystemState<(
                     Commands,
                     Query<(&EntityIdIndex, &InstanceHolder)>,
