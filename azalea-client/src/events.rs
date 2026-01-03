@@ -157,7 +157,7 @@ pub fn chat_listener(query: Query<&LocalPlayerEvents>, mut events: EventReader<C
 }
 
 // only tick if we're in a world
-fn tick_listener(query: Query<&LocalPlayerEvents, With<InstanceName>>) {
+pub fn tick_listener(query: Query<&LocalPlayerEvents, With<InstanceName>>) {
     for local_player_events in &query {
         let _ = local_player_events.send(Event::Tick);
     }
