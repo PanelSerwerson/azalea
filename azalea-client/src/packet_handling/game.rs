@@ -775,7 +775,6 @@ pub fn process_packet_events(ecs: &mut World) {
             ClientboundGamePacket::SetEntityMotion(_) => {
                 // vanilla servers use this packet for knockback, but note that the Explode
                 // packet is also sometimes used by servers for knockback
-                /*
                 let mut system_state: SystemState<(
                     Commands,
                     Query<(&EntityIdIndex, &InstanceHolder)>,
@@ -810,7 +809,6 @@ pub fn process_packet_events(ecs: &mut World) {
                 });
 
                 system_state.apply(ecs);
-                */
             }
             ClientboundGamePacket::SetEntityLink(p) => {
                 debug!("Got set entity link packet {p:?}");
@@ -845,7 +843,6 @@ pub fn process_packet_events(ecs: &mut World) {
                 /*debug!("Got set experience packet {p:?}");*/
             }
             ClientboundGamePacket::TeleportEntity(_) => {
-                /*
                 let mut system_state: SystemState<(
                     Commands,
                     Query<(&EntityIdIndex, &InstanceHolder)>,
@@ -879,7 +876,6 @@ pub fn process_packet_events(ecs: &mut World) {
                 }
 
                 system_state.apply(ecs);
-                */
             }
             ClientboundGamePacket::UpdateAdvancements(_) => {
                 /*debug!("Got update advancements packet {p:?}");*/
