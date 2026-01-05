@@ -1,10 +1,11 @@
 use azalea_buf::{BufReadError, McBufReadable, McBufVarReadable, McBufVarWritable, McBufWritable};
 use azalea_registry::DataComponentKind;
 use std::{
-    collections::HashMap,
+    //collections::HashMap,
     fmt,
     io::{Cursor, Write},
 };
+use indexmap::IndexMap;
 
 use crate::components::{self};
 
@@ -172,7 +173,7 @@ impl McBufWritable for ItemSlot {
 
 #[derive(Default)]
 pub struct DataComponentPatch {
-    components: HashMap<DataComponentKind, Option<Box<dyn components::EncodableDataComponent>>>,
+    components: IndexMap<DataComponentKind, Option<Box<dyn components::EncodableDataComponent>>>,
 }
 
 impl DataComponentPatch {
@@ -190,7 +191,7 @@ impl McBufReadable for DataComponentPatch {
             return Ok(DataComponentPatch::default());
         }
 
-        let mut components = HashMap::new();
+        let mut components = IndexMap::new();
         for _ in 0..components_with_data_count {
             let component_kind = DataComponentKind::read_from(buf)?;
             let component_data = components::from_kind(component_kind, buf)?;
@@ -208,8 +209,8 @@ impl McBufReadable for DataComponentPatch {
 
 impl McBufWritable for DataComponentPatch {
     fn write_into(&self, buf: &mut impl Write) -> Result<(), std::io::Error> {
-        let mut components_with_data_count = 0;
-        let mut components_without_data_count = 0;
+        let mut components_with_data_count: u32 = 0;
+        let mut components_without_data_count: u32 = 0;
         for component in self.components.values() {
             if component.is_some() {
                 components_with_data_count += 1;
@@ -221,12 +222,13 @@ impl McBufWritable for DataComponentPatch {
         components_with_data_count.write_into(buf)?;
         components_without_data_count.write_into(buf)?;
 
+        let mut component_buf = Vec::new();
         for (kind, component) in &self.components {
             if let Some(component) = component {
                 kind.write_into(buf)?;
-                let mut component_buf = Vec::new();
-                component.encode(&mut component_buf).unwrap();
-                component_buf.write_into(buf)?;
+                component_buf.clear();
+                component.encode(&mut component_buf)?;
+                buf.write_all(&component_buf)?;
             }
         }
 
@@ -242,7 +244,7 @@ impl McBufWritable for DataComponentPatch {
 
 impl Clone for DataComponentPatch {
     fn clone(&self) -> Self {
-        let mut components = HashMap::with_capacity(self.components.len());
+        let mut components = IndexMap::with_capacity(self.components.len());
         for (kind, component) in &self.components {
             components.insert(*kind, component.as_ref().map(|c| (*c).clone()));
         }
