@@ -18,3 +18,4 @@ azalea-chat = { version = "0.10.0", path = "../azalea-chat", features = [
 ] }
 azalea-core = { version = "0.10.0", path = "../azalea-core" }
 uuid = "1.9.1"
+indexmap = "2.7.0"
