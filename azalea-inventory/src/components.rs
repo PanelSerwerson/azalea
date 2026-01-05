@@ -265,8 +265,7 @@ pub enum AttributeModifierOperation {
 // circular dependency)
 #[derive(Clone, PartialEq, McBuf)]
 pub struct AttributeModifier {
-    pub uuid: Uuid,
-    pub name: String,
+    pub id: ResourceLocation, // PLUS 1.21.1
     pub amount: f64,
     pub operation: AttributeModifierOperation,
 }
