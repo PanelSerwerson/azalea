@@ -41,7 +41,6 @@ impl McBufReadable for ClientboundLoginDisconnectPacket {
             reason: FormattedText::deserialize(disconnect_json)?,
         })
     }
-    }
 }
 
 impl McBufWritable for ClientboundLoginDisconnectPacket {
