@@ -26,7 +26,7 @@ impl McBufReadable for ClientboundLoginDisconnectPacket {
 
 impl McBufReadable for ClientboundLoginDisconnectPacket {
     fn read_from(buf: &mut Cursor<&[u8]>) -> Result<ClientboundLoginDisconnectPacket, BufReadError> {
-        let disconnect_string = String::azalea_read(buf)?;
+        let disconnect_string = String::read_from(buf)?;
         let disconnect_json =
             match serde_json::from_str::<serde_json::Value>(disconnect_string.as_str()) {
                 Ok(json) => json,
