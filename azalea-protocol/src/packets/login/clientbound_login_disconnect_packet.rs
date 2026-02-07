@@ -10,6 +10,7 @@ pub struct ClientboundLoginDisconnectPacket {
     pub reason: FormattedText,
 }
 
+/*
 impl McBufReadable for ClientboundLoginDisconnectPacket {
     fn read_from(
         buf: &mut Cursor<&[u8]>,
@@ -20,6 +21,26 @@ impl McBufReadable for ClientboundLoginDisconnectPacket {
         Ok(ClientboundLoginDisconnectPacket {
             reason: FormattedText::deserialize(disconnect_json)?,
         })
+    }
+}*/
+
+impl McBufReadable for ClientboundLoginDisconnectPacket {
+    fn read_from(buf: &mut Cursor<&[u8]>) -> Result<ClientboundLoginDisconnectPacket, BufReadError> {
+        let disconnect_string = String::azalea_read(buf)?;
+        let disconnect_json =
+            match serde_json::from_str::<serde_json::Value>(disconnect_string.as_str()) {
+                Ok(json) => json,
+                Err(err) => {
+                    return Err(BufReadError::Custom(format!(
+                        "Failed to deserialize disconnect JSON {disconnect_string:?}: {err}"
+                    )));
+                }
+            };
+
+        Ok(ClientboundLoginDisconnect {
+            reason: FormattedText::deserialize(disconnect_json)?,
+        })
+    }
     }
 }
 
