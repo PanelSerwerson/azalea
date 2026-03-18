@@ -19,15 +19,13 @@ use std::fmt::Debug;
 use std::io::Cursor;
 use std::marker::PhantomData;
 use std::net::SocketAddr;
+use std::time::Duration;
 use thiserror::Error;
 use tokio::io::{AsyncWriteExt, BufStream};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf, ReuniteError};
 use tokio::net::TcpStream;
 use tracing::{error, info};
 use uuid::Uuid;
-// AZALEA PLUS
-use socket2::{Socket, Domain, Type, SockAddr};
-use std::time::Duration;
 
 pub struct RawReadConnection {
     pub read_stream: OwnedReadHalf,
@@ -212,6 +210,7 @@ where
         ))?))
     }
 }
+
 impl<W> WriteConnection<W>
 where
     W: ProtocolPacket + Debug,
@@ -278,22 +277,14 @@ impl Proxy {
 impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
     /// Create a new connection to the given address.
     pub async fn new(address: &SocketAddr) -> Result<Self, ConnectionError> {
-        /*
-        let stream = TcpStream::connect(address).await?;
-        stream.set_nodelay(true)?;
-        Self::new_from_stream(stream).await*/
-        let domain = Domain::for_address(*address);
-        let socket = Socket::new(domain, Type::STREAM, None)?;
-        socket.set_reuse_address(true)?;
-        socket.set_reuse_port(true)?;
-        socket.set_nodelay(true)?;
-        
-        let sockaddr = SockAddr::from(*address);
-        socket.connect_timeout(&sockaddr, Duration::from_secs(15))?;
-        
-        let stream: std::net::TcpStream = socket.into();
-        let stream = TcpStream::from_std(stream)?;
+        let stream = tokio::time::timeout(
+            Duration::from_secs(15),
+            TcpStream::connect(address),
+        )
+        .await
+        .map_err(|_| std::io::Error::new(std::io::ErrorKind::TimedOut, "connection timed out"))??;
 
+        stream.set_nodelay(true)?;
         Self::new_from_stream(stream).await
     }
 
@@ -386,59 +377,6 @@ impl Connection<ClientboundLoginPacket, ServerboundLoginPacket> {
         Connection::from(self)
     }
 
-    /// Authenticate with Minecraft's servers, which is required to join
-    /// online-mode servers. This must happen when you get a
-    /// `ClientboundLoginPacket::Hello` packet.
-    ///
-    /// # Examples
-    ///
-    /// ```rust,no_run
-    /// use azalea_auth::AuthResult;
-    /// use azalea_protocol::connect::Connection;
-    /// use azalea_protocol::packets::login::{
-    ///     ClientboundLoginPacket,
-    ///     serverbound_key_packet::ServerboundKeyPacket
-    /// };
-    /// use uuid::Uuid;
-    /// # use azalea_protocol::ServerAddress;
-    ///
-    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
-    /// let AuthResult { access_token, profile } = azalea_auth::auth(
-    ///     "example@example.com",
-    ///     azalea_auth::AuthOpts::default()
-    /// ).await.expect("Couldn't authenticate");
-    /// #
-    /// # let address = ServerAddress::try_from("example@example.com").unwrap();
-    /// # let resolved_address = azalea_protocol::resolver::resolve_address(&address).await?;
-    ///
-    /// let mut conn = Connection::new(&resolved_address).await?;
-    ///
-    /// // transition to the login state, in a real program we would have done a handshake first
-    /// let mut conn = conn.login();
-    ///
-    /// match conn.read().await? {
-    ///     ClientboundLoginPacket::Hello(p) => {
-    ///         // tell Mojang we're joining the server & enable encryption
-    ///         let e = azalea_crypto::encrypt(&p.public_key, &p.challenge).unwrap();
-    ///         conn.authenticate(
-    ///             &access_token,
-    ///             &profile.id,
-    ///             e.secret_key,
-    ///             &p
-    ///         ).await?;
-    ///         conn.write(
-    ///             ServerboundKeyPacket {
-    ///                 key_bytes: e.encrypted_public_key,
-    ///                 encrypted_challenge: e.encrypted_challenge,
-    ///             }.get()
-    ///         ).await?;
-    ///         conn.set_encryption_key(e.secret_key);
-    ///     }
-    ///     _ => {}
-    /// }
-    /// # Ok(())
-    /// # }
-    /// ```
     pub async fn authenticate(
         &self,
         access_token: &str,
@@ -503,9 +441,6 @@ impl Connection<ServerboundLoginPacket, ClientboundLoginPacket> {
         Connection::from(self)
     }
 
-    /// Verify connecting clients have authenticated with Minecraft's servers.
-    /// This must happen after the client sends a `ServerboundLoginPacket::Key`
-    /// packet.
     pub async fn authenticate(
         &self,
         username: &str,
