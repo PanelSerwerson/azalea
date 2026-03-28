@@ -9,12 +9,16 @@ use crate::packets::login::clientbound_hello_packet::ClientboundHelloPacket;
 use crate::packets::login::{ClientboundLoginPacket, ServerboundLoginPacket};
 use crate::packets::status::{ClientboundStatusPacket, ServerboundStatusPacket};
 use crate::packets::ProtocolPacket;
-use crate::read::{deserialize_packet, read_raw_packet, try_read_raw_packet, ReadPacketError};
+use crate::read::{
+    deserialize_packet, read_packet_filtered, read_raw_packet, try_read_raw_packet,
+    ReadPacketError,
+};
 use crate::write::{serialize_packet, write_raw_packet};
 use azalea_auth::game_profile::GameProfile;
 use azalea_auth::sessionserver::{ClientSessionServerError, ServerSessionServerError};
 use azalea_crypto::{Aes128CfbDec, Aes128CfbEnc};
 use bytes::BytesMut;
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::io::Cursor;
 use std::marker::PhantomData;
@@ -52,96 +56,13 @@ pub struct WriteConnection<W: ProtocolPacket> {
     _writing: PhantomData<W>,
 }
 
-/// A connection that can read and write packets.
-///
-/// # Examples
-///
-/// Join an offline-mode server and go through the handshake.
-/// ```rust,no_run
-/// use azalea_protocol::{
-///     resolver,
-///     connect::Connection,
-///     packets::{
-///         ClientIntention, PROTOCOL_VERSION,
-///         login::{
-///             ClientboundLoginPacket,
-///             serverbound_hello_packet::ServerboundHelloPacket,
-///             serverbound_key_packet::ServerboundKeyPacket
-///         },
-///         handshaking::client_intention_packet::ClientIntentionPacket
-///     }
-/// };
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let resolved_address = resolver::resolve_address(&"localhost".try_into().unwrap()).await?;
-///     let mut conn = Connection::new(&resolved_address).await?;
-///
-///     // handshake
-///     conn.write(
-///         ClientIntentionPacket {
-///             protocol_version: PROTOCOL_VERSION,
-///             hostname: resolved_address.ip().to_string(),
-///             port: resolved_address.port(),
-///             intention: ClientIntention::Login,
-///         }
-///         .get(),
-///     )
-///     .await?;
-///
-///     let mut conn = conn.login();
-///
-///     // login
-///     conn.write(
-///         ServerboundHelloPacket {
-///             name: "bot".to_string(),
-///             profile_id: uuid::Uuid::nil(),
-///         }
-///         .get(),
-///     )
-///     .await?;
-///
-///     let (conn, game_profile) = loop {
-///         let packet = conn.read().await?;
-///         match packet {
-///             ClientboundLoginPacket::Hello(p) => {
-///                 let e = azalea_crypto::encrypt(&p.public_key, &p.challenge).unwrap();
-///
-///                 conn.write(
-///                     ServerboundKeyPacket {
-///                         key_bytes: e.encrypted_public_key,
-///                         encrypted_challenge: e.encrypted_challenge,
-///                     }
-///                     .get(),
-///                 )
-///                 .await?;
-///                 conn.set_encryption_key(e.secret_key);
-///             }
-///             ClientboundLoginPacket::LoginCompression(p) => {
-///                 conn.set_compression_threshold(p.compression_threshold);
-///             }
-///             ClientboundLoginPacket::GameProfile(p) => {
-///                 break (conn.configuration(), p.game_profile);
-///             }
-///             ClientboundLoginPacket::LoginDisconnect(p) => {
-///                 eprintln!("login disconnect: {}", p.reason);
-///                 return Err("login disconnect".into());
-///             }
-///             ClientboundLoginPacket::CustomQuery(p) => {}
-///             ClientboundLoginPacket::CookieRequest(_) => {}
-///         }
-///     };
-///
-///     Ok(())
-/// }
-/// ```
 pub struct Connection<R: ProtocolPacket, W: ProtocolPacket> {
     pub reader: ReadConnection<R>,
     pub writer: WriteConnection<W>,
 }
 
 impl RawReadConnection {
-    pub async fn read(&mut self) -> Result<Vec<u8>, Box<ReadPacketError>> {
+    pub async fn read(&mut self) -> Result<BytesMut, Box<ReadPacketError>> {
         read_raw_packet::<_>(
             &mut self.read_stream,
             &mut self.buffer,
@@ -151,7 +72,7 @@ impl RawReadConnection {
         .await
     }
 
-    pub fn try_read(&mut self) -> Result<Option<Vec<u8>>, Box<ReadPacketError>> {
+    pub fn try_read(&mut self) -> Result<Option<BytesMut>, Box<ReadPacketError>> {
         try_read_raw_packet::<_>(
             &mut self.read_stream,
             &mut self.buffer,
@@ -171,7 +92,6 @@ impl RawWriteConnection {
         )
         .await
         {
-            // detect broken pipe
             if e.kind() == std::io::ErrorKind::BrokenPipe {
                 info!("Broken pipe, shutting down connection.");
                 if let Err(e) = self.shutdown().await {
@@ -183,7 +103,6 @@ impl RawWriteConnection {
         Ok(())
     }
 
-    /// End the connection.
     pub async fn shutdown(&mut self) -> std::io::Result<()> {
         self.write_stream.shutdown().await
     }
@@ -193,21 +112,30 @@ impl<R> ReadConnection<R>
 where
     R: ProtocolPacket + Debug,
 {
-    /// Read a packet from the stream.
     pub async fn read(&mut self) -> Result<R, Box<ReadPacketError>> {
         let raw_packet = self.raw.read().await?;
-        deserialize_packet(&mut Cursor::new(raw_packet.as_slice()))
+        deserialize_packet(&mut Cursor::new(&raw_packet[..]))
     }
 
-    /// Try to read a packet from the stream, or return Ok(None) if there's no
-    /// packet.
     pub fn try_read(&mut self) -> Result<Option<R>, Box<ReadPacketError>> {
         let Some(raw_packet) = self.raw.try_read()? else {
             return Ok(None);
         };
-        Ok(Some(deserialize_packet(&mut Cursor::new(
-            raw_packet.as_slice(),
-        ))?))
+        Ok(Some(deserialize_packet(&mut Cursor::new(&raw_packet[..]))?))
+    }
+
+    pub async fn read_filtered(
+        &mut self,
+        allowed_ids: &HashSet<u32>,
+    ) -> Result<Option<R>, Box<ReadPacketError>> {
+        read_packet_filtered(
+            &mut self.raw.read_stream,
+            &mut self.raw.buffer,
+            self.raw.compression_threshold,
+            &mut self.raw.dec_cipher,
+            allowed_ids,
+        )
+        .await
     }
 }
 
@@ -215,12 +143,10 @@ impl<W> WriteConnection<W>
 where
     W: ProtocolPacket + Debug,
 {
-    /// Write a packet to the server.
     pub async fn write(&mut self, packet: W) -> std::io::Result<()> {
         self.raw.write(&serialize_packet(&packet).unwrap()).await
     }
 
-    /// End the connection.
     pub async fn shutdown(&mut self) -> std::io::Result<()> {
         self.raw.shutdown().await
     }
@@ -231,23 +157,25 @@ where
     R: ProtocolPacket + Debug,
     W: ProtocolPacket + Debug,
 {
-    /// Read a packet from the other side of the connection.
     pub async fn read(&mut self) -> Result<R, Box<ReadPacketError>> {
         self.reader.read().await
     }
 
-    /// Try to read a packet from the other side of the connection, or return
-    /// Ok(None) if there's no packet to read.
     pub fn try_read(&mut self) -> Result<Option<R>, Box<ReadPacketError>> {
         self.reader.try_read()
     }
 
-    /// Write a packet to the other side of the connection.
+    pub async fn read_filtered(
+        &mut self,
+        allowed_ids: &HashSet<u32>,
+    ) -> Result<Option<R>, Box<ReadPacketError>> {
+        self.reader.read_filtered(allowed_ids).await
+    }
+
     pub async fn write(&mut self, packet: W) -> std::io::Result<()> {
         self.writer.write(packet).await
     }
 
-    /// Split the reader and writer into two objects. This doesn't allocate.
     #[must_use]
     pub fn into_split(self) -> (ReadConnection<R>, WriteConnection<W>) {
         (self.reader, self.writer)
@@ -275,7 +203,6 @@ impl Proxy {
 }
 
 impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
-    /// Create a new connection to the given address.
     pub async fn new(address: &SocketAddr) -> Result<Self, ConnectionError> {
         let stream = tokio::time::timeout(
             Duration::from_secs(15),
@@ -288,8 +215,6 @@ impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
         Self::new_from_stream(stream).await
     }
 
-    /// Create a new connection to the given address and Socks5 proxy. If you're
-    /// not using a proxy, use [`Self::new`] instead.
     pub async fn new_with_proxy(
         address: &SocketAddr,
         proxy: Proxy,
@@ -304,8 +229,6 @@ impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
         Self::new_from_stream(stream.into_inner()).await
     }
 
-    /// Create a new connection from an existing stream. Useful if you want to
-    /// set custom options on the stream. Otherwise, just use [`Self::new`].
     pub async fn new_from_stream(stream: TcpStream) -> Result<Self, ConnectionError> {
         let (read_stream, write_stream) = stream.into_split();
 
@@ -330,15 +253,11 @@ impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
         })
     }
 
-    /// Change our state from handshake to login. This is the state that is used
-    /// for logging in.
     #[must_use]
     pub fn login(self) -> Connection<ClientboundLoginPacket, ServerboundLoginPacket> {
         Connection::from(self)
     }
 
-    /// Change our state from handshake to status. This is the state that is
-    /// used for pinging the server.
     #[must_use]
     pub fn status(self) -> Connection<ClientboundStatusPacket, ServerboundStatusPacket> {
         Connection::from(self)
@@ -346,11 +265,7 @@ impl Connection<ClientboundHandshakePacket, ServerboundHandshakePacket> {
 }
 
 impl Connection<ClientboundLoginPacket, ServerboundLoginPacket> {
-    /// Set our compression threshold, i.e. the maximum size that a packet is
-    /// allowed to be without getting compressed. If you set it to less than 0
-    /// then compression gets disabled.
     pub fn set_compression_threshold(&mut self, threshold: i32) {
-        // if you pass a threshold of less than 0, compression is disabled
         if threshold >= 0 {
             self.reader.raw.compression_threshold = Some(threshold as u32);
             self.writer.raw.compression_threshold = Some(threshold as u32);
@@ -360,16 +275,12 @@ impl Connection<ClientboundLoginPacket, ServerboundLoginPacket> {
         }
     }
 
-    /// Set the encryption key that is used to encrypt and decrypt packets. It's
-    /// the same for both reading and writing.
     pub fn set_encryption_key(&mut self, key: [u8; 16]) {
         let (enc_cipher, dec_cipher) = azalea_crypto::create_cipher(&key);
         self.reader.raw.dec_cipher = Some(dec_cipher);
         self.writer.raw.enc_cipher = Some(enc_cipher);
     }
 
-    /// Change our state from login to configuration. This is the state where
-    /// the server sends us the registries and resource pack and stuff.
     #[must_use]
     pub fn configuration(
         self,
@@ -396,15 +307,11 @@ impl Connection<ClientboundLoginPacket, ServerboundLoginPacket> {
 }
 
 impl Connection<ServerboundHandshakePacket, ClientboundHandshakePacket> {
-    /// Change our state from handshake to login. This is the state that is used
-    /// for logging in.
     #[must_use]
     pub fn login(self) -> Connection<ServerboundLoginPacket, ClientboundLoginPacket> {
         Connection::from(self)
     }
 
-    /// Change our state from handshake to status. This is the state that is
-    /// used for pinging the server.
     #[must_use]
     pub fn status(self) -> Connection<ServerboundStatusPacket, ClientboundStatusPacket> {
         Connection::from(self)
@@ -412,11 +319,7 @@ impl Connection<ServerboundHandshakePacket, ClientboundHandshakePacket> {
 }
 
 impl Connection<ServerboundLoginPacket, ClientboundLoginPacket> {
-    /// Set our compression threshold, i.e. the maximum size that a packet is
-    /// allowed to be without getting compressed. If you set it to less than 0
-    /// then compression gets disabled.
     pub fn set_compression_threshold(&mut self, threshold: i32) {
-        // if you pass a threshold of less than 0, compression is disabled
         if threshold >= 0 {
             self.reader.raw.compression_threshold = Some(threshold as u32);
             self.writer.raw.compression_threshold = Some(threshold as u32);
@@ -426,16 +329,12 @@ impl Connection<ServerboundLoginPacket, ClientboundLoginPacket> {
         }
     }
 
-    /// Set the encryption key that is used to encrypt and decrypt packets. It's
-    /// the same for both reading and writing.
     pub fn set_encryption_key(&mut self, key: [u8; 16]) {
         let (enc_cipher, dec_cipher) = azalea_crypto::create_cipher(&key);
         self.reader.raw.dec_cipher = Some(dec_cipher);
         self.writer.raw.enc_cipher = Some(enc_cipher);
     }
 
-    /// Change our state from login to game. This is the state that's used when
-    /// the client is actually in the game.
     #[must_use]
     pub fn game(self) -> Connection<ServerboundGamePacket, ClientboundGamePacket> {
         Connection::from(self)
@@ -451,7 +350,6 @@ impl Connection<ServerboundLoginPacket, ClientboundLoginPacket> {
         azalea_auth::sessionserver::serverside_auth(username, public_key, private_key, ip).await
     }
 
-    /// Change our state back to configuration.
     #[must_use]
     pub fn configuration(
         self,
@@ -461,8 +359,6 @@ impl Connection<ServerboundLoginPacket, ClientboundLoginPacket> {
 }
 
 impl Connection<ServerboundConfigurationPacket, ClientboundConfigurationPacket> {
-    /// Change our state from configuration to game. This is the state that's
-    /// used when the client is actually in the world.
     #[must_use]
     pub fn game(self) -> Connection<ServerboundGamePacket, ClientboundGamePacket> {
         Connection::from(self)
@@ -470,8 +366,6 @@ impl Connection<ServerboundConfigurationPacket, ClientboundConfigurationPacket> 
 }
 
 impl Connection<ClientboundConfigurationPacket, ServerboundConfigurationPacket> {
-    /// Change our state from configuration to game. This is the state that's
-    /// used when the client is actually in the world.
     #[must_use]
     pub fn game(self) -> Connection<ClientboundGamePacket, ServerboundGamePacket> {
         Connection::from(self)
@@ -479,7 +373,6 @@ impl Connection<ClientboundConfigurationPacket, ServerboundConfigurationPacket> 
 }
 
 impl Connection<ClientboundGamePacket, ServerboundGamePacket> {
-    /// Change our state back to configuration.
     #[must_use]
     pub fn configuration(
         self,
@@ -488,15 +381,11 @@ impl Connection<ClientboundGamePacket, ServerboundGamePacket> {
     }
 }
 
-// rust doesn't let us implement From because allegedly it conflicts with
-// `core`'s "impl<T> From<T> for T" so we do this instead
 impl<R1, W1> Connection<R1, W1>
 where
     R1: ProtocolPacket + Debug,
     W1: ProtocolPacket + Debug,
 {
-    /// Creates a `Connection` of a type from a `Connection` of another type.
-    /// Useful for servers or custom packets.
     #[must_use]
     pub fn from<R2, W2>(connection: Connection<R1, W1>) -> Connection<R2, W2>
     where
@@ -515,7 +404,6 @@ where
         }
     }
 
-    /// Convert an existing `TcpStream` into a `Connection`. Useful for servers.
     pub fn wrap(stream: TcpStream) -> Connection<R1, W1> {
         let (read_stream, write_stream) = stream.into_split();
 
@@ -540,7 +428,6 @@ where
         }
     }
 
-    /// Convert from a `Connection` into a `TcpStream`. Useful for servers.
     pub fn unwrap(self) -> Result<TcpStream, ReuniteError> {
         self.reader
             .raw
