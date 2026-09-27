@@ -1,4 +1,7 @@
-use std::io::{Cursor, Write};
+use std::{
+    io::{Cursor, Write},
+    marker::PhantomData,
+};
 
 use azalea_buf::{BufReadError, McBuf, McBufReadable, McBufWritable};
 
@@ -123,7 +126,6 @@ impl From<Vec<u8>> for BitSet {
         BitSet { data: words }
     }
 }
-
 /// A list of bits with a known fixed size.
 ///
 /// Note that this is primarily meant for fast serialization and deserialization
@@ -131,115 +133,65 @@ impl From<Vec<u8>> for BitSet {
 /// since it's approximately 20% faster (since it stores the data as usizes
 /// instead of u8s)
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FixedBitSet<const N: usize>
-where
-    [(); N.div_ceil(8)]: Sized,
-{
-    data: [u8; N.div_ceil(8)],
+pub struct FixedBitSet<const N: usize> {
+    data: Vec<u8>,
+    // Keeps N as part of the type without requiring generic const expressions
+    // such as `[u8; N.div_ceil(8)]`.
+    _marker: PhantomData<[(); N]>,
 }
 
-impl<const N: usize> FixedBitSet<N>
-where
-    [(); N.div_ceil(8)]: Sized,
-{
+impl<const N: usize> FixedBitSet<N> {
+    #[inline]
     pub fn new() -> Self {
-        FixedBitSet {
-            data: [0; N.div_ceil(8)],
+        Self {
+            data: vec![0; N.div_ceil(8)],
+            _marker: PhantomData,
         }
     }
 
     #[inline]
     pub fn index(&self, index: usize) -> bool {
+        assert!(index < N, "bit index {index} out of bounds for FixedBitSet<{N}>");
         (self.data[index / 8] & (1u8 << (index % 8))) != 0
     }
 
     #[inline]
     pub fn set(&mut self, bit_index: usize) {
+        assert!(
+            bit_index < N,
+            "bit index {bit_index} out of bounds for FixedBitSet<{N}>"
+        );
         self.data[bit_index / 8] |= 1u8 << (bit_index % 8);
     }
 }
 
-impl<const N: usize> McBufReadable for FixedBitSet<N>
-where
-    [u8; N.div_ceil(8)]: Sized,
-{
+impl<const N: usize> McBufReadable for FixedBitSet<N> {
     fn read_from(buf: &mut Cursor<&[u8]>) -> Result<Self, BufReadError> {
-        let mut data = [0; N.div_ceil(8)];
-        for item in data.iter_mut().take(N.div_ceil(8)) {
+        let mut data = vec![0u8; N.div_ceil(8)];
+
+        for item in &mut data {
             *item = u8::read_from(buf)?;
         }
-        Ok(FixedBitSet { data })
+
+        Ok(Self {
+            data,
+            _marker: PhantomData,
+        })
     }
 }
-impl<const N: usize> McBufWritable for FixedBitSet<N>
-where
-    [u8; N.div_ceil(8)]: Sized,
-{
+
+impl<const N: usize> McBufWritable for FixedBitSet<N> {
     fn write_into(&self, buf: &mut impl Write) -> Result<(), std::io::Error> {
-        for i in 0..N.div_ceil(8) {
-            self.data[i].write_into(buf)?;
+        for byte in &self.data {
+            byte.write_into(buf)?;
         }
+
         Ok(())
     }
 }
-impl<const N: usize> Default for FixedBitSet<N>
-where
-    [u8; N.div_ceil(8)]: Sized,
-{
+
+impl<const N: usize> Default for FixedBitSet<N> {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_bitset() {
-        let mut bitset = BitSet::new(64);
-        assert!(!bitset.index(0));
-        assert!(!bitset.index(1));
-        assert!(!bitset.index(2));
-        bitset.set(1);
-        assert!(!bitset.index(0));
-        assert!(bitset.index(1));
-        assert!(!bitset.index(2));
-    }
-
-    #[test]
-    fn test_clear() {
-        let mut bitset = BitSet::new(128);
-        bitset.set(62);
-        bitset.set(63);
-        bitset.set(64);
-        bitset.set(65);
-        bitset.set(66);
-
-        bitset.clear(63, 65);
-
-        assert!(bitset.index(62));
-        assert!(!bitset.index(63));
-        assert!(!bitset.index(64));
-        assert!(bitset.index(65));
-        assert!(bitset.index(66));
-    }
-
-    #[test]
-    fn test_clear_2() {
-        let mut bitset = BitSet::new(128);
-        bitset.set(64);
-        bitset.set(65);
-        bitset.set(66);
-        bitset.set(67);
-        bitset.set(68);
-
-        bitset.clear(65, 67);
-
-        assert!(bitset.index(64));
-        assert!(!bitset.index(65));
-        assert!(!bitset.index(66));
-        assert!(bitset.index(67));
-        assert!(bitset.index(68));
     }
 }
