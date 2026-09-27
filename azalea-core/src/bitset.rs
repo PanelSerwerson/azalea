@@ -140,7 +140,7 @@ where
 
 impl<const N: usize> FixedBitSet<N>
 where
-    [u8; N.div_ceil(8)]: Sized,
+    [(); N.div_ceil(8)]: Sized,
 {
     pub fn new() -> Self {
         FixedBitSet {
