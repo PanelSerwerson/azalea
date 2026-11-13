@@ -151,9 +151,9 @@ impl From<&Position> for BlockPos {
 #[derive(AzBuf, Clone, Copy, Debug, Default, PartialEq)]
 pub struct LookDirection {
     /// Left and right. AKA yaw. In degrees.
-    y_rot: f32,
+    pub y_rot: f32,
     /// Up and down. AKA pitch. In degrees.
-    x_rot: f32,
+    pub x_rot: f32,
 }
 
 impl LookDirection {
